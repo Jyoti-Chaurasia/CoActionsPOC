@@ -9,8 +9,8 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  run-tests:
+    runs-on: windows-latest
 
     steps:
     - name: Checkout repository
@@ -21,11 +21,60 @@ jobs:
       with:
         python-version: '3.13'
 
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: pip-${{ runner.os }}-
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run tests
+    - name: Run tests with Allure
       run: |
-        pytest
+        pytest --alluredir=allure-results
+        dir allure-results
+
+    - name: Upload Allure Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-results
+        path: allure-results
+
+  generate-report:
+    needs: run-tests
+    runs-on: windows-latest
+
+    steps:
+    - name: Download Allure Results
+      uses: actions/download-artifact@v4
+      with:
+        name: allure-results
+        path: allure-results
+
+    - name: Download Allure CLI
+      run: |
+        curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.zip
+        tar -xf allure.zip
+        echo "${{ github.workspace }}\\allure-2.25.0\\bin" >> $env:GITHUB_PATH
+
+    - name: Generate Allure Report in docs/
+      run: |
+        allure generate allure-results -o docs --clean
+
+    - name: Upload Allure Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-report
+        path: allure-report
+        
+    - name: Commit Allure Report to docs/
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add docs
+        git commit -m "Update Allure report [skip ci]" || echo "No changes to commit"
+        git push

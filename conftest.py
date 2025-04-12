@@ -2,6 +2,7 @@ import outcome
 import os
 import pytest
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from utils.util import take_screenshot
 from datetime import datetime
 
@@ -11,13 +12,20 @@ driver= None
 @pytest.fixture(scope="function")
 def driver():
     global driver
-    driver= webdriver.Chrome()
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")  # Run in headless mode
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1920x1080")
+    chrome_options.add_argument("--disable-extensions")
+
+    driver = webdriver.Chrome(options=chrome_options)
     driver.implicitly_wait(5)
     driver.maximize_window()
 
     yield driver
     driver.quit()
-
 
 
 # @pytest.hookimpl( hookwrapper=True )
@@ -30,7 +38,7 @@ def driver():
 #     outcome = yield
 #     report = outcome.get_result()
 #     extra = getattr( report, 'extra', [] )
-#
+
 #     if report.when == 'call' or report.when == "setup":
 #         xfail = hasattr( report, 'wasxfail' )
 #         if (report.skipped and xfail) or (report.failed and not xfail):
@@ -44,4 +52,4 @@ def driver():
 #                        'onclick="window.open(this.src)" align="right"/></div>' % file_name
 #                 extra.append( pytest_html.extras.html( html ) )
 #         report.extras = extra
-#
+

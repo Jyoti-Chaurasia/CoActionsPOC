@@ -1,0 +1,2 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","1511","test_product_validation","tests","Thu Apr 10 19:43:17 IST 2025","passed","Thu Apr 10 19:43:19 IST 2025","","test_validate_products","",""
