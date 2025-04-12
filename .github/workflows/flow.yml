@@ -83,7 +83,6 @@ jobs:
         git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
         git add allure-report
         git commit -m "Update Allure report [skip ci]" || echo "No changes to commit"
-        git push origin HEAD:gh-pages
 
     - name: Deploy Allure Report to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
