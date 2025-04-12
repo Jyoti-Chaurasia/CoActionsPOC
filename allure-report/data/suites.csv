@@ -1,2 +1,2 @@
 "Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
-"passed","Sat Apr 12 18:39:09 UTC 2025","Sat Apr 12 18:39:13 UTC 2025","4512","tests","test_validate_products","","","","test_product_validation",""
+"passed","Sat Apr 12 18:46:06 UTC 2025","Sat Apr 12 18:46:08 UTC 2025","2404","tests","test_validate_products","","","","test_product_validation",""
