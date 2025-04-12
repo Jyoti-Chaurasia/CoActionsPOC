@@ -74,16 +74,6 @@ jobs:
         name: allure-report
         path: allure-report
         
-    - name: Commit Allure Report to allure-report/
-      env:
-        TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-      run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-        git add allure-report
-        git commit -m "Update Allure report [skip ci]" || echo "No changes to commit"
-
     - name: Deploy Allure Report to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
