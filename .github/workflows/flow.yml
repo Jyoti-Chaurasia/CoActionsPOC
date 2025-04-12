@@ -64,10 +64,9 @@ jobs:
         tar -xf allure.zip
         echo "${{ github.workspace }}\\allure-2.25.0\\bin" >> $env:GITHUB_PATH
 
-    - name: Generate Allure Report in docs/
+    - name: Generate Allure Report in allure-report/
       run: |
         allure generate allure-results -o allure-report --clean
-        allure generate allure-results -o docs --clean
 
     - name: Upload Allure Report
       uses: actions/upload-artifact@v4
@@ -75,13 +74,13 @@ jobs:
         name: allure-report
         path: allure-report
         
-    - name: Commit Allure Report to docs/
+    - name: Commit Allure Report to allure-report/
       env:
         TOKEN: ${{ secrets.PERSONAL_TOKEN }}
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
         git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-        git add docs
+        git add allure-report
         git commit -m "Update Allure report [skip ci]" || echo "No changes to commit"
         git push origin HEAD:master
