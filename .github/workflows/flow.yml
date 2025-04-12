@@ -63,6 +63,7 @@ jobs:
 
     - name: Generate Allure Report in docs/
       run: |
+        allure generate allure-results -o allure-report --clean
         allure generate allure-results -o docs --clean
 
     - name: Upload Allure Report
