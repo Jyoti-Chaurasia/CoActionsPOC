@@ -1,0 +1,72 @@
+name: Scheduled Report Cleanup - gh-pages
+
+on:
+  # schedule:
+  #   - cron: '30 3 * * *' # Runs every day at 9:00 AM IST (3:30 AM UTC)
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Delete report folders older than N days (10-20)'
+        required: false
+        default: '20'
+
+# Global environment: prefer manual input, else default to 20
+env:
+  DAYS: ${{ github.event.inputs.days || '20' }}
+
+permissions:
+  security-events: write
+  contents: write
+  id-token: write
+  pull-requests: write
+  repository-projects: write
+  actions: write
+
+jobs:
+  cleanup-old-allure-reports:
+    runs-on: on-prem-standard-container
+    container:
+      image: docker-secure-tjt0.artifactory.fg.rbc.com/qa-automation/installer:6.0
+      ports:
+        - "4444:4444"
+
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Delete report folders older than 20 days (or less if inputted manually)
+        run: |
+          echo "Cleaning folders older than ${DAYS} days."
+          cutoff_date=$(date -d "${DAYS} days ago" +%s)
+          for folder in */; do
+            folder_name="${folder%/}"
+            if echo "$folder_name" | grep -Eq '^[0-9]+$'; then
+              last_commit=$(git log -1 --format="%ci" -- "$folder_name" 2>/dev/null)
+              if [ -n "$last_commit" ]; then
+                last_commit_epoch=$(date -d "$last_commit" +%s)
+                if [ "$last_commit_epoch" -lt "$cutoff_date" ]; then
+                  echo "Deleting: $folder_name (last commit: $last_commit)"
+                  rm -rf "$folder_name"
+                fi
+              fi
+            fi
+          done
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Clean up reports older than ${DAYS} days"
+          git push origin gh-pages
+
+      - name: Deploy cleaned gh-pages to Github Pages
+        uses: rbc-external-actions/actions-gh-pages@v4
+        with:
+           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+           PUBLISH_BRANCH: gh-pages
+           PUBLISH_DIR: ./
+           KEEP_FILES: true
